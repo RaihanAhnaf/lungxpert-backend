@@ -7,6 +7,8 @@ use App\Http\Requests\PatientUpdateRequest;
 use App\Http\Resources\PatientCollection;
 use App\Http\Resources\PatientResource;
 use App\Models\Patient;
+use Error;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Arr;
@@ -30,7 +32,11 @@ class PatientController extends Controller
         $fileName = date('YmdHi') . $image->getClientOriginalName();
         $image->move(public_path('public/images'), $fileName);
 
+
         $response = Http::attach('image', file_get_contents(public_path('public/images/' . $fileName)), $fileName)->post('http://localhost:5000/upload');
+        if ($response->json('status') == "NOT OK") {
+            return response()->json(['data' => ['message' => 'Not Lung']], 400);
+        }
 
         $patient = Patient::create([
             'name' => $request->name,
